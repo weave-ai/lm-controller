@@ -22,7 +22,7 @@ spec:
         runAsNonRoot: true
       containers:
       - name: manager
-        image: ghcr.io/llm-gitops/lm-controller
+        image: ghcr.io/weave-ai/lm-controller
         imagePullPolicy: IfNotPresent
         command:
         - /manager

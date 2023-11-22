@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.3.1
+
+**Release date:** 2023-11-22
+
+Fixes:
+- Fix image name in the deployment YAML. [PR #3](https://github.com/weave-ai/lm-controller/pull/3)
+
 ## 0.3.0
 
 **Release date:** 2023-11-22
