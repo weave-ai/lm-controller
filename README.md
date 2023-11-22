@@ -17,10 +17,12 @@ For development and testing, the standalone LM-Controller can be installed using
 
 ```shell
 flux install
+```
 
-VERSION=v0.2.1
+```shell
+VERSION=v0.3.0
 kubectl create ns weave-ai
 kubectl apply -f  https://github.com/weave-ai/lm-controller/releases/download/${VERSION}/lm-controller.crds.yaml
-kubectl apply -f  https://github.com/weave-ai/lm-controller/releases/download/${VERSION}/lm-controller.rbac.yaml
-kubectl apply -f  https://github.com/weave-ai/lm-controller/releases/download/${VERSION}/lm-controller.deployment.yaml
+kubectl -n weave-ai apply -f  https://github.com/weave-ai/lm-controller/releases/download/${VERSION}/lm-controller.rbac.yaml
+kubectl -n weave-ai apply -f  https://github.com/weave-ai/lm-controller/releases/download/${VERSION}/lm-controller.deployment.yaml
 ```

@@ -1,3 +1,4 @@
+namespace: weave-ai
 resources:
 - role.yaml
 - role_binding.yaml
