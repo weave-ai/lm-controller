@@ -1,0 +1,46 @@
+project_name: lm-controller
+
+builds:
+  - skip: true
+
+release:
+  extra_files:
+    - glob: config/release/*.yaml
+  prerelease: "auto"
+  header: |
+    ## Changelog
+
+    [{{.Tag}} changelog](https://github.com/weave-ai/{{.ProjectName}}/blob/{{.Tag}}/CHANGELOG.md)
+  footer: |
+    ## Container images
+  
+    - `ghcr.io/weave-ai/{{.ProjectName}}:{{.Tag}}`
+    
+    Supported architectures: `linux/amd64` and `linux/arm64`.
+changelog:
+  skip: true
+
+checksum:
+  extra_files:
+    - glob: config/release/*.yaml
+
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}_{{ .Version }}_source_code"
+
+# signs the checksum file
+# all files (including the sboms) are included in the checksum
+# https://goreleaser.com/customization/sign
+signs:
+  - cmd: cosign
+    env:
+      - COSIGN_EXPERIMENTAL=1
+    certificate: "${artifact}.pem"
+    args:
+      - sign-blob
+      - "--yes"
+      - "--output-certificate=${certificate}"
+      - "--output-signature=${signature}"
+      - "${artifact}"
+    artifacts: checksum
+    output: true

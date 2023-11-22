@@ -1,0 +1,68 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lm-controller
+  namespace: weave-ai
+  labels:
+    app: lm-controller
+spec:
+  selector:
+    matchLabels:
+      app: lm-controller
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+      labels:
+        app: lm-controller
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - name: manager
+        image: ghcr.io/llm-gitops/lm-controller
+        imagePullPolicy: IfNotPresent
+        command:
+        - /manager
+        args:
+        - --watch-all-namespaces
+        - --log-level=info
+        - --log-encoding=json
+        - --enable-leader-election
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - "ALL"
+          seccompProfile:
+            type: RuntimeDefault
+        ports:
+          - containerPort: 8080
+            name: http-prom
+            protocol: TCP
+          - containerPort: 9440
+            name: healthz
+            protocol: TCP
+        env:
+          - name: RUNTIME_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: healthz
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: healthz
+        resources:
+          limits:
+            cpu: 500m
+            memory: 128Mi
+          requests:
+            cpu: 10m
+            memory: 64Mi
+      terminationGracePeriodSeconds: 10

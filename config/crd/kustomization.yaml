@@ -1,0 +1,3 @@
+resources:
+- bases/ai.contrib.fluxcd.io_languagemodels.yaml
+#+kubebuilder:scaffold:crdkustomizeresource
