@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.3.0
+
+**Release date:** 2023-11-22
+
+Fixes:
+- Fix RBAC namespace in the rbac.yaml file. [PR #2](https://github.com/weave-ai/lm-controller/pull/2)
+- Improve the readme with installation instructions. [PR #2](https://github.com/weave-ai/lm-controller/pull/2)
+
 ## 0.2.1
 
 **Release date:** 2023-11-22
