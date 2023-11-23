@@ -747,6 +747,7 @@ func (r *LanguageModelReconciler) buildKubernetes(obj *aiv1a1.LanguageModel, url
 									Value: "/models/model.gguf",
 								},
 							},
+							Resources: obj.Spec.Engine.Resources,
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									MountPath: "/models",
