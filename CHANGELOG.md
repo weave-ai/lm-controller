@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.5.0
+
+**Release date:** 2023-11-24
+
+Fixes:
+- Fix number of threads to be core - 1 [PR #10](https://github.com/weave-ai/lm-controller/pull/10)
+
 ## 0.4.0
 
 **Release date:** 2023-11-23
