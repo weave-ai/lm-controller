@@ -13,14 +13,15 @@ Large Language Models (LLMs) on Kubernetes.
 ### Installation
 
 LM-Controller should be installed as part of the Weave AI Controllers.
-For development and testing, the standalone LM-Controller can be installed using the following commands:
+It requires Flux's Source Controller and currently only supports when network-policy is disabled.
 
+For development and testing, the standalone LM-Controller can be installed using the following commands:
 ```shell
-flux install
+flux install --network-policy=false
 ```
 
 ```shell
-VERSION=v0.3.1
+VERSION=v0.4.0
 kubectl create ns weave-ai
 kubectl apply -f  https://github.com/weave-ai/lm-controller/releases/download/${VERSION}/lm-controller.crds.yaml
 kubectl -n weave-ai apply -f  https://github.com/weave-ai/lm-controller/releases/download/${VERSION}/lm-controller.rbac.yaml

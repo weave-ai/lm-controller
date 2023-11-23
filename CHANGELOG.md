@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.4.0
+
+**Release date:** 2023-11-23
+
+Fixes:
+- Fix init container resource requests and limits. [PR #6](https://github.com/weave-ai/lm-controller/pull/6)
+- Fix network-policy instruction in README
+
 ## 0.3.1
 
 **Release date:** 2023-11-22
