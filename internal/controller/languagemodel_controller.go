@@ -23,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -702,6 +703,12 @@ func (r *LanguageModelReconciler) buildKubernetes(obj *aiv1a1.LanguageModel, url
 		},
 	}
 
+	// we need to leave one thread for the web server
+	threads := int(obj.Spec.Engine.Resources.Requests.Cpu().Value()) - 1
+	if threads < 1 {
+		threads = 1
+	}
+
 	deploy := appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "apps/v1",
@@ -773,7 +780,11 @@ func (r *LanguageModelReconciler) buildKubernetes(obj *aiv1a1.LanguageModel, url
 								"--model",
 								"/models/model.gguf",
 								"--model_alias",
-								obj.Name, // TODO use annotation
+								obj.Name,
+								"--n_threads",
+								strconv.Itoa(threads),
+								"--n_threads_batch",
+								strconv.Itoa(threads),
 							},
 							Resources: obj.Spec.Engine.Resources,
 							SecurityContext: &corev1.SecurityContext{
