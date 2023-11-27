@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"math"
 	"sort"
 	"strconv"
 	"strings"
@@ -621,6 +622,25 @@ func (r *LanguageModelReconciler) reconcile(ctx context.Context, obj *aiv1a1.Lan
 	return nil
 }
 
+func roundGigaQuantity(input string, safetyFactor float64) (string, error) {
+	quantity, err := resource.ParseQuantity(input)
+	if err != nil {
+		return "", err
+	}
+
+	// Extract the numeric value and round it
+	// value := quantity.AsApproximateFloat64()
+	value := float64(quantity.ScaledValue(resource.Giga))
+	roundedValue := math.Ceil(value * safetyFactor)
+	if quantity.Format == resource.BinarySI {
+		return fmt.Sprintf("%dGi", int64(roundedValue)), nil
+	} else if quantity.Format == resource.DecimalSI {
+		return fmt.Sprintf("%dG", int64(roundedValue)), nil
+	} else {
+		return "", fmt.Errorf("unknown quantity format %s", quantity.Format)
+	}
+}
+
 func (r *LanguageModelReconciler) build(obj *aiv1a1.LanguageModel, url string, metadata map[string]string) ([]*unstructured.Unstructured, error) {
 	usePv := obj.Spec.ModelCacheStrategy == aiv1a1.ModelCacheStrategyPV
 	switch obj.Spec.Engine.DeploymentType {
@@ -703,8 +723,18 @@ func (r *LanguageModelReconciler) buildKubernetes(obj *aiv1a1.LanguageModel, url
 		},
 	}
 
-	// we need to leave one thread for the web server
-	threads := int(obj.Spec.Engine.Resources.Requests.Cpu().Value()) - 1
+	resourceRequirements := obj.Spec.Engine.Resources.DeepCopy()
+	if resourceRequirements.Requests == nil {
+		resourceRequirements.Requests = corev1.ResourceList{}
+	}
+	if resourceRequirements.Limits == nil {
+		resourceRequirements.Limits = corev1.ResourceList{}
+	}
+	resourceRequirements.Limits[CPUResourceName] = resourceRequirements.Requests[CPUResourceName]
+
+	// we need to leave some cpu for the web server, so rounding up.
+	cpu := resourceRequirements.Requests.Cpu()
+	threads := int(math.Ceil(cpu.AsApproximateFloat64())) - 1
 	if threads < 1 {
 		threads = 1
 	}
@@ -813,7 +843,7 @@ func (r *LanguageModelReconciler) buildKubernetes(obj *aiv1a1.LanguageModel, url
 									Value: "/models/model.gguf",
 								},
 							},
-							Resources: obj.Spec.Engine.Resources,
+							Resources: *resourceRequirements,
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									MountPath: "/models",
