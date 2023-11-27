@@ -857,8 +857,9 @@ func (r *LanguageModelReconciler) buildKubernetes(obj *aiv1a1.LanguageModel, url
 					},
 					Containers: []corev1.Container{
 						{
-							Name:  "engine",
-							Image: obj.Spec.GetEngineImage(),
+							Name:            "engine",
+							Image:           obj.Spec.GetEngineImage(),
+							ImagePullPolicy: obj.Spec.Engine.ImagePullPolicy,
 							Ports: []corev1.ContainerPort{
 								{
 									ContainerPort: 8000,

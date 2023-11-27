@@ -210,7 +210,7 @@ type EngineSpec struct {
 	// ImagePullPolicy is the image pull policy of the engine.
 	// +kubebuilder:validation:Enum=Always;IfNotPresent;Never
 	// +kubebuilder:default=IfNotPresent
-	// ImagePullPolicy string `json:"imagePullPolicy,omitempty"`
+	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy,omitempty"`
 
 	// ImagePullSecrets is the image pull secrets of the engine.
 	// +kubebuilder:default=weave-ai-registry
