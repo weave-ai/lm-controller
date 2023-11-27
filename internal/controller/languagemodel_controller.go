@@ -825,6 +825,7 @@ func (r *LanguageModelReconciler) buildKubernetes(obj *aiv1a1.LanguageModel, url
 					},
 				},
 				Spec: corev1.PodSpec{
+					// TODO parameterize security context
 					SecurityContext: &corev1.PodSecurityContext{
 						RunAsUser:  &[]int64{65532}[0],
 						RunAsGroup: &[]int64{65532}[0],
