@@ -150,6 +150,15 @@ spec:
                           Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                         type: object
                     type: object
+                  serviceType:
+                    default: ClusterIP
+                    description: ServiceType is the service type of the engine.
+                    enum:
+                    - ClusterIP
+                    - NodePort
+                    - LoadBalancer
+                    - ExternalName
+                    type: string
                   storageClass:
                     default: standard
                     description: StorageClass is the storage class of the engine.

@@ -205,6 +205,11 @@ type EngineSpec struct {
 	//+kubebuilder:default=standard
 	StorageClass *string `json:"storageClass,omitempty"`
 
+	// ServiceType is the service type of the engine.
+	// +kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer;ExternalName
+	// +kubebuilder:default=ClusterIP
+	ServiceType corev1.ServiceType `json:"serviceType,omitempty"`
+
 	// TODO Security SecuritySpec `json:"security,omitempty"`
 
 	// ImagePullPolicy is the image pull policy of the engine.
