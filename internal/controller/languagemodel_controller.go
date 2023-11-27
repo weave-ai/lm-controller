@@ -740,6 +740,7 @@ func (r *LanguageModelReconciler) buildKubernetes(obj *aiv1a1.LanguageModel, url
 						RunAsGroup: &[]int64{65532}[0],
 						FSGroup:    &[]int64{65532}[0],
 					},
+					NodeSelector: obj.Spec.Engine.NodeSelector,
 					InitContainers: []corev1.Container{
 						{
 							Name:  "model-downloader",

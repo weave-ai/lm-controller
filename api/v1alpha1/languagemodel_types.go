@@ -190,6 +190,13 @@ type EngineSpec struct {
 	// +optional
 	Image string `json:"image,omitempty"`
 
+	// NodeSelector is a selector which must be true for the pod to fit on a node.
+	// Selector which must match a node's labels for the pod to be scheduled on that node.
+	// More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+	// +optional
+	// +mapType=atomic
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+
 	// Resources is the resources of the engine.
 	//+kubebuilder:default={"limits":{"cpu":"1000m","ephemeral-storage":"1Gi","memory":"1Gi"},"requests":{"cpu":"1000m","ephemeral-storage":"1Gi", "memory":"1Gi"}}
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
