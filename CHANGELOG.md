@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.7.0
+
+**Release date:** 2023-11-27
+
+Improvements:
+- Add imagePullPolicy to the engine spec
+
 ## 0.6.0
 
 **Release date:** 2023-11-27
