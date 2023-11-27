@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.6.0
+
+**Release date:** 2023-11-27
+
+Improvements:
+- Implement model metadata 
+- Implement resource estimation
+- Update Llama-cpp-python to v0.2.19
+Fixes:
+- Default to rolling update when deployment does not have a PVC attached
+
 ## 0.5.0
 
 **Release date:** 2023-11-24
