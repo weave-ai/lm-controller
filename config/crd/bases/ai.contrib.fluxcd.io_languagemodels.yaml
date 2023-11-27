@@ -70,6 +70,14 @@ spec:
                   image:
                     description: Image is the image of the engine.
                     type: string
+                  imagePullPolicy:
+                    default: IfNotPresent
+                    description: ImagePullPolicy is the image pull policy of the engine.
+                    enum:
+                    - Always
+                    - IfNotPresent
+                    - Never
+                    type: string
                   nodeSelector:
                     additionalProperties:
                       type: string
