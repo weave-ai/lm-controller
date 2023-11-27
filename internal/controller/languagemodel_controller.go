@@ -721,7 +721,7 @@ func (r *LanguageModelReconciler) buildKubernetes(obj *aiv1a1.LanguageModel, url
 			Selector: map[string]string{
 				"app": obj.Name,
 			},
-			Type: corev1.ServiceTypeClusterIP,
+			Type: obj.Spec.Engine.ServiceType,
 		},
 	}
 
