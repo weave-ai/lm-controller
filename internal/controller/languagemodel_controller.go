@@ -535,7 +535,7 @@ func (r *LanguageModelReconciler) reconcile(ctx context.Context, obj *aiv1a1.Lan
 
 	log.Info("Building manifests", "revision", revision)
 
-	objects, err := r.build(obj, src.GetArtifact().URL)
+	objects, err := r.build(obj, src.GetArtifact().URL, src.GetArtifact().Metadata)
 	if err != nil {
 		conditions.MarkFalse(obj, meta.ReadyCondition, aiv1a1.ReconciliationFailedReason, err.Error())
 		return fmt.Errorf("failed to build resources: %w", err)
@@ -621,15 +621,15 @@ func (r *LanguageModelReconciler) reconcile(ctx context.Context, obj *aiv1a1.Lan
 	return nil
 }
 
-func (r *LanguageModelReconciler) build(obj *aiv1a1.LanguageModel, url string) ([]*unstructured.Unstructured, error) {
+func (r *LanguageModelReconciler) build(obj *aiv1a1.LanguageModel, url string, metadata map[string]string) ([]*unstructured.Unstructured, error) {
 	usePv := obj.Spec.ModelCacheStrategy == aiv1a1.ModelCacheStrategyPV
 	switch obj.Spec.Engine.DeploymentType {
 	case aiv1a1.DeploymentTypeDefault:
-		return r.buildKubernetes(obj, url, usePv)
+		return r.buildKubernetes(obj, url, metadata, usePv)
 	case aiv1a1.DeploymentTypeKubernetesDeployment:
-		return r.buildKubernetes(obj, url, usePv)
+		return r.buildKubernetes(obj, url, metadata, usePv)
 	case aiv1a1.DeploymentTypeKnativeService:
-		return r.buildKnative(obj, url)
+		return r.buildKnative(obj, url, metadata)
 		// case aiv1a1.DeploymentTypeKFServing:
 		//	return r.buildKFServing(ctx, obj, url)
 		// case aiv1a1.DeploymentTypeSeldon:
@@ -639,7 +639,7 @@ func (r *LanguageModelReconciler) build(obj *aiv1a1.LanguageModel, url string) (
 	return nil, fmt.Errorf("unknown deployment type %s", obj.Spec.Engine.DeploymentType)
 }
 
-func (r *LanguageModelReconciler) buildKubernetes(obj *aiv1a1.LanguageModel, url string, usePvc bool) ([]*unstructured.Unstructured, error) {
+func (r *LanguageModelReconciler) buildKubernetes(obj *aiv1a1.LanguageModel, url string, metadata map[string]string, usePvc bool) ([]*unstructured.Unstructured, error) {
 	var (
 		pvc               *corev1.PersistentVolumeClaim
 		modelVolumeSource corev1.VolumeSource
@@ -708,6 +708,64 @@ func (r *LanguageModelReconciler) buildKubernetes(obj *aiv1a1.LanguageModel, url
 	if threads < 1 {
 		threads = 1
 	}
+
+	if sizeOnDisk, ok := metadata[MetadataSizeOnDisk]; ok {
+		s, err := roundGigaQuantity(sizeOnDisk, SizeOnDiskSafetyFactor)
+		if err != nil {
+			return nil, err
+		}
+
+		q, err := resource.ParseQuantity(s)
+		if err != nil {
+			return nil, err
+		}
+
+		resourceRequirements.Requests[EphemeralStorageResourceName] = q
+		resourceRequirements.Limits[EphemeralStorageResourceName] = q
+	}
+
+	if memoryRequired, ok := metadata[MetadataMemoryRequired]; ok {
+		s, err := roundGigaQuantity(memoryRequired, MemorySafetyFactor)
+		if err != nil {
+			return nil, err
+		}
+
+		q, err := resource.ParseQuantity(s)
+		if err != nil {
+			return nil, err
+		}
+
+		resourceRequirements.Requests[MemoryResourceName] = q
+		resourceRequirements.Limits[MemoryResourceName] = q
+	}
+
+	env := []corev1.EnvVar{}
+	env = append(env, corev1.EnvVar{Name: EnvVarModelName, Value: obj.Spec.SourceRef.Name})
+	if val, ok := metadata[MetadataModelDescription]; ok {
+		env = append(env, corev1.EnvVar{Name: EnvVarModelDescription, Value: val})
+	}
+	if val, ok := metadata[MetadataContextSize]; ok {
+		env = append(env, corev1.EnvVar{Name: EnvVarContextSize, Value: val})
+	}
+	if val, ok := metadata[MetadataFamily]; ok {
+		env = append(env, corev1.EnvVar{Name: EnvVarFamily, Value: val})
+	}
+	if val, ok := metadata[MetadataFormat]; ok {
+		env = append(env, corev1.EnvVar{Name: EnvVarFormat, Value: val})
+	}
+	if val, ok := metadata[MetadataQuantization]; ok {
+		env = append(env, corev1.EnvVar{Name: EnvVarQuantization, Value: val})
+	}
+	if val, ok := metadata[MetadataPromptTemplate]; ok {
+		env = append(env, corev1.EnvVar{Name: EnvVarPromptTemplate, Value: val})
+	}
+	// TODO implement stop words in weave-ai/model
+	// what's the best way to pass this in?
+	// if val, ok := metadata[MetadataStopWords]; ok {
+	//	env = append(env, corev1.EnvVar{Name: EnvVarStopWords, Value: val})
+	// }
+
+	chatFormat := getChatFormatFromModelFamily(metadata[MetadataFamily])
 
 	deploy := appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -782,12 +840,15 @@ func (r *LanguageModelReconciler) buildKubernetes(obj *aiv1a1.LanguageModel, url
 								"/models/model.gguf",
 								"--model_alias",
 								obj.Name,
+								"--chat_format",
+								chatFormat,
 								"--n_threads",
 								strconv.Itoa(threads),
 								"--n_threads_batch",
 								strconv.Itoa(threads),
 							},
-							Resources: obj.Spec.Engine.Resources,
+							Env:       env,
+							Resources: *resourceRequirements,
 							SecurityContext: &corev1.SecurityContext{
 								Capabilities: &corev1.Capabilities{
 									Drop: []corev1.Capability{
@@ -825,7 +886,7 @@ func (r *LanguageModelReconciler) buildKubernetes(obj *aiv1a1.LanguageModel, url
 	return objects, nil
 }
 
-func (r *LanguageModelReconciler) buildKnative(obj *aiv1a1.LanguageModel, url string) ([]*unstructured.Unstructured, error) {
+func (r *LanguageModelReconciler) buildKnative(obj *aiv1a1.LanguageModel, url string, _ map[string]string) ([]*unstructured.Unstructured, error) {
 	service := servingv1.Service{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "serving.knative.dev/v1",
