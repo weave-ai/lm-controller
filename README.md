@@ -21,7 +21,7 @@ flux install --network-policy=false
 ```
 
 ```shell
-VERSION=v0.7.0
+VERSION=v0.8.0
 kubectl create ns weave-ai
 kubectl apply -f  https://github.com/weave-ai/lm-controller/releases/download/${VERSION}/lm-controller.crds.yaml
 kubectl -n weave-ai apply -f  https://github.com/weave-ai/lm-controller/releases/download/${VERSION}/lm-controller.rbac.yaml
