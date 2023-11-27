@@ -665,7 +665,9 @@ func (r *LanguageModelReconciler) buildKubernetes(obj *aiv1a1.LanguageModel, url
 		modelVolumeSource corev1.VolumeSource
 	)
 
+	deploymentStrategy := appsv1.RollingUpdateDeploymentStrategyType
 	if usePvc {
+		deploymentStrategy = appsv1.RecreateDeploymentStrategyType
 		pvc = &corev1.PersistentVolumeClaim{
 			TypeMeta: metav1.TypeMeta{
 				APIVersion: "v1",
@@ -681,7 +683,7 @@ func (r *LanguageModelReconciler) buildKubernetes(obj *aiv1a1.LanguageModel, url
 				},
 				Resources: corev1.ResourceRequirements{
 					Requests: corev1.ResourceList{
-						"storage": resource.MustParse("10Gi"),
+						StorageResourceName: resource.MustParse("10Gi"), // TODO
 					},
 				},
 				StorageClassName: obj.Spec.Engine.StorageClass,
@@ -814,7 +816,7 @@ func (r *LanguageModelReconciler) buildKubernetes(obj *aiv1a1.LanguageModel, url
 				},
 			},
 			Strategy: appsv1.DeploymentStrategy{
-				Type: appsv1.RecreateDeploymentStrategyType,
+				Type: deploymentStrategy,
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
