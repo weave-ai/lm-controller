@@ -49,6 +49,13 @@ func (in *EngineSpec) DeepCopyInto(out *EngineSpec) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.NodeSelector != nil {
+		in, out := &in.NodeSelector, &out.NodeSelector
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	in.Resources.DeepCopyInto(&out.Resources)
 	if in.StorageClass != nil {
 		in, out := &in.StorageClass, &out.StorageClass
