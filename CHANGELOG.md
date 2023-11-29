@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.8.1
+
+**Release date:** 2023-11-29
+
+Improvements:
+- Use llama-cpp-python v0.2.20
+
 ## 0.8.0
 
 **Release date:** 2023-11-27
