@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.9.0
+
+**Release date:** 2023-12-12
+
+Improvements:
+- Use llama-cpp-python v0.2.22
+- Expose the model's leve (base, instruct, chat) and stop words as the model metadata
+
 ## 0.8.1
 
 **Release date:** 2023-11-29

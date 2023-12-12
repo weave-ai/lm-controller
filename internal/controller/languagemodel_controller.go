@@ -791,11 +791,14 @@ func (r *LanguageModelReconciler) buildKubernetes(obj *aiv1a1.LanguageModel, url
 	if val, ok := metadata[MetadataPromptTemplate]; ok {
 		env = append(env, corev1.EnvVar{Name: EnvVarPromptTemplate, Value: val})
 	}
-	// TODO implement stop words in weave-ai/model
-	// what's the best way to pass this in?
-	// if val, ok := metadata[MetadataStopWords]; ok {
-	//	env = append(env, corev1.EnvVar{Name: EnvVarStopWords, Value: val})
-	// }
+	if val, ok := metadata[MetadataStopWords]; ok {
+		// we escape the = sign in the Base64 stop words
+		val = strings.ReplaceAll(val, "_", "=")
+		env = append(env, corev1.EnvVar{Name: EnvVarStopWords, Value: val})
+	}
+	if val, ok := metadata[MetadataModelLevel]; ok {
+		env = append(env, corev1.EnvVar{Name: EnvVarModelLevel, Value: val})
+	}
 
 	chatFormat := getChatFormatFromModelFamily(metadata[MetadataFamily])
 
