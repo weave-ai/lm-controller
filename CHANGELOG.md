@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.10.0
+
+**Release date:** 2023-12-14
+
+Improvements:
+- Use llama-cpp-python v0.2.23 to support Mixtral 8x7B
+
 ## 0.9.0
 
 **Release date:** 2023-12-12
