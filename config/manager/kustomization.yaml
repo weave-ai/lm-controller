@@ -5,4 +5,4 @@ resources:
 images:
 - name: ghcr.io/weave-ai/lm-controller
   newName: ghcr.io/weave-ai/lm-controller
-  newTag: v0.9.0
+  newTag: v0.10.0
